@@ -116,11 +116,11 @@ if __name__ == "__main__":
     #==================Run One Controller =================
     # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
     # import the experiment variable
-    NumAV = 1
-    TypeAV = 'LACC'
-    exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=False)
-    # run for a set number of rollouts / time steps
-    exp.run(1, 6000)
+    # NumAV = 1
+    # TypeAV = 'LACC'
+    # exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=False)
+    # # run for a set number of rollouts / time steps
+    # exp.run(1, 6000)
 
     #==================Run all controllers in a bacth=================
     #import the experiment variable
@@ -131,17 +131,17 @@ if __name__ == "__main__":
     #     print('{} left'.format(23-x)) 
     #     print('done') 
     #     del exp1
-    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
     # AV_case = ['FS']
 
-    # for av in AV_case:
-    #     print('Start {}'.format(av)) 
-    #     for x in range(23):
-    #         exp1 = sugiyama_example1(x = x, cont=av, render=False)
-    #         exp1.run(1, 6000, convert_to_csv=True)
-    #         print('{} {} left'.format(av,23-x)) 
-    #         print('done') 
-    #         del exp1
+    for av in AV_case:
+        print('Start {}'.format(av)) 
+        for x in range(23):
+            exp1 = sugiyama_example1(x = x, cont=av, render=False)
+            exp1.run(1, 6000, convert_to_csv=True)
+            print('{} {} left'.format(av,23-x)) 
+            print('done') 
+            del exp1
 
 
     # for x in range(23):
