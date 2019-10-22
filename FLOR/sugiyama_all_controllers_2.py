@@ -26,7 +26,7 @@ def sugiyama_10HV_interval(render=True, cont='OV_FTL'):
     Perform a simulation of vehicles on a ring road.
     2 AVs are placed with 10 HV intervals.
     """
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}/IDM_{}_10Interval'.format(cont,cont))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}_10Interval/IDM_{}'.format(cont,cont))
     
     if render is not None:
         sim_params.render = render
@@ -120,7 +120,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
     if x>11:
         return False
 
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}/{}IDM_{}{}_2Interval'.format(cont,22-x,x,cont))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}_2Interval/IDM{}_{}{}'.format(cont,22-x,cont,x))
     
     if render is not None:
         sim_params.render = render
@@ -296,91 +296,41 @@ if __name__ == "__main__":
     # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
     # import the experiment variable
     # NumAV = 1
-    # TypeAV = 'LACC'
+    # TypeAV = 'PI'
     # exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=False)
-    # # run for a set number of rollouts / time steps
+    # exp = sugiyama_10HV_interval(render=True, cont=TypeAV)
+    # exp = sugiyama_1HV_interval(render=False, x=NumAV, cont=TypeAV)
+    # run for a set number of rollouts / time steps
     # exp.run(1, 6000)
 
-    #==================Run all controllers in a bacth=================
-    #import the experiment variable
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='OVFTL', render=False)
-    #     print(exp1.env.sim_params.emission_path)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('{} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
+    #==================Run all controllers (10 HVs interval) in a bacth=================
+    ## 
     AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    # AV_case = ['FS']
-
+    
     for av in AV_case:
         print('Start {}'.format(av)) 
-        for x in range(23):
-            exp1 = sugiyama_example1(x = x, cont=av, render=False)
+        exp1 = sugiyama_10HV_interval(render=True, cont=av)
+        exp1.run(1, 6000, convert_to_csv=True)
+        del exp1
+            
+    #==================Run all controllers (1 HVs interval) in a bacth=================
+    for av in AV_case:
+        print('Start {}'.format(av)) 
+        for x in range(2,12):
+            AV_num = x
+            exp1 = sugiyama_example1(x = AV_num, cont=av, render=False)
             exp1.run(1, 6000, convert_to_csv=True)
-            print('{} {} left'.format(av,23-x)) 
+            print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
             print('done') 
-            del exp1
+            del exp1 
 
-
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='AUG', render=False)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('AUG {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='MLYAU1', render=False)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('MLYAU1 {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='MLYAU2', render=False)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('MLYAU2 {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='FUZO', render=False)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('FUZO {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='FUZN', render=False)
-    #     exp1.run(1, 6000, convert_to_csv=True)
-    #     print('FUZN {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='LACC', render=False)
-    #     exp1.run(1, 500, convert_to_csv=True)
-    #     print('LACC {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='PI', render=False)
-    #     exp1.run(1, 500, convert_to_csv=True)
-    #     print('PI {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='FS', render=False)
-    #     exp1.run(1, 500, convert_to_csv=True)
-    #     print('FS {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='BCM', render=False)
-    #     exp1.run(1, 500, convert_to_csv=True)
-    #     print('BCM {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    # for x in range(23):
-    #     exp1 = sugiyama_example1(x = x,cont='LinOpt', render=False)
-    #     exp1.run(1, 500, convert_to_csv=True)
-    #     print('LinOpt {} left'.format(23-x)) 
-    #     print('done') 
-    #     del exp1
-    
+    #==================Run all controllers in a bacth=================
+    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    # for av in AV_case:
+    #     print('Start {}'.format(av)) 
+    #     for x in range(23):
+    #         exp1 = sugiyama_example1(x = x, cont=av, render=False)
+    #         exp1.run(1, 6000, convert_to_csv=True)
+    #         print('{} {} left'.format(av,23-x)) 
+    #         print('done') 
+    #         del exp1
