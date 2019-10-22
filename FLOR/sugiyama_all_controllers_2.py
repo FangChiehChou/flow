@@ -21,6 +21,185 @@ import numpy as np
 import os
 
 
+def sugiyama_10HV_interval(render=True, cont='OV_FTL'):
+    """
+    Perform a simulation of vehicles on a ring road.
+    2 AVs are placed with 10 HV intervals.
+    """
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}/IDM_{}_10Interval'.format(cont,cont))
+    
+    if render is not None:
+        sim_params.render = render
+
+    #Switch the controller to be deployed
+    if cont == "AUG":
+        controller = Augmented_OV_FTL    
+    if cont == "MLYAU1":
+        controller = ModifiedLyapunovTypeControllerU1
+    if cont == "MLYAU2":
+        controller = ModifiedLyapunovTypeControllerU2
+    if cont == "FUZO":
+        controller = FuzzyController_Old
+    if cont == "FUZN":
+        controller = FuzzyController_New
+    if cont == "FS":
+        controller = FollowerStopper
+    if cont == "LACC":
+        controller = LACController    
+    if cont == "PI":
+        controller = PISaturation
+    if cont == "BCM":
+        controller = BCMController
+    if cont == "LinOpt":
+        controller = LinOpt_Controller_IDM
+
+    vehicles = VehicleParams()    
+    vehicles.add(
+        veh_id="IDM1",
+        acceleration_controller=(IDMController, {"noise":0.1}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=10)
+    vehicles.add(
+        veh_id="{}1".format(cont),
+        acceleration_controller=(AVRider, {"AVController":controller}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=1)
+    vehicles.add(
+        veh_id="IDM2",
+        acceleration_controller=(IDMController, {"noise":0.1}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=10)
+    vehicles.add(
+        veh_id="{}2".format(cont),
+        acceleration_controller=(AVRider, {"AVController":controller}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=1)
+
+    env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
+
+    net_params = NetParams(
+        additional_params={
+            'length': 260,
+            'lanes': 1,
+            'speed_limit': 30,
+            'resolution': 40
+        }
+    )
+
+    initial_config = InitialConfig(perturbation=1, spacing='uniform')
+
+    scenario = RingNetwork(
+        name="sugiyama",
+        vehicles=vehicles,
+        net_params=net_params,
+        initial_config=initial_config)
+
+    env = AccelEnv(env_params, sim_params, scenario)
+
+    return Experiment(env)
+
+
+def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
+    """
+    Perform a simulation of vehicles on a ring road.
+    AVs are placed with 1 HV intervals.
+    """
+    
+    if x>11:
+        return False
+
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}/{}IDM_{}{}_2Interval'.format(cont,22-x,x,cont))
+    
+    if render is not None:
+        sim_params.render = render
+
+    #Switch the controller to be deployed
+    if cont == "AUG":
+        controller = Augmented_OV_FTL    
+    if cont == "MLYAU1":
+        controller = ModifiedLyapunovTypeControllerU1
+    if cont == "MLYAU2":
+        controller = ModifiedLyapunovTypeControllerU2
+    if cont == "FUZO":
+        controller = FuzzyController_Old
+    if cont == "FUZN":
+        controller = FuzzyController_New
+    if cont == "FS":
+        controller = FollowerStopper
+    if cont == "LACC":
+        controller = LACController    
+    if cont == "PI":
+        controller = PISaturation
+    if cont == "BCM":
+        controller = BCMController
+    if cont == "LinOpt":
+        controller = LinOpt_Controller_IDM
+
+    vehicles = VehicleParams()    
+
+    for i in range(x):
+        vehicles.add(
+            veh_id="IDM_{}".format(i),
+            acceleration_controller=(IDMController, {"noise":0.1}),
+            car_following_params=SumoCarFollowingParams(
+                min_gap=0
+            ),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=1)
+        vehicles.add(
+            veh_id="{}_{}".format(cont,i),
+            acceleration_controller=(AVRider, {"AVController":controller}),
+            car_following_params=SumoCarFollowingParams(
+                min_gap=0
+            ),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=1)
+
+    vehicles.add(
+        veh_id="IDM",
+        acceleration_controller=(IDMController, {"noise":0.1}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=22-2*x)    
+
+    env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
+
+    net_params = NetParams(
+        additional_params={
+            'length': 260,
+            'lanes': 1,
+            'speed_limit': 30,
+            'resolution': 40
+        }
+    )
+
+    initial_config = InitialConfig(perturbation=1, spacing='uniform')
+
+    scenario = RingNetwork(
+        name="sugiyama",
+        vehicles=vehicles,
+        net_params=net_params,
+        initial_config=initial_config)
+
+    env = AccelEnv(env_params, sim_params, scenario)
+
+    return Experiment(env)        
+
+
 def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
     """
     Perform a simulation of vehicles on a ring road.
