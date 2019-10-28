@@ -205,8 +205,8 @@ class LACController(BaseController):
     def __init__(self,
                  veh_id,
                  car_following_params,
-                 k_1=0.3,
-                 k_2=0.4,
+                 k_1=0.7,
+                 k_2=0.8,
                  h=1,
                  tau=0.1,
                  a=0,
@@ -235,8 +235,7 @@ class LACController(BaseController):
         lead_vel = env.k.vehicle.get_speed(lead_id)
         this_vel = env.k.vehicle.get_speed(self.veh_id)
         headway = env.k.vehicle.get_headway(self.veh_id)
-        L = env.k.vehicle.get_length(self.veh_id)
-        ex = headway - L - self.h * this_vel
+        ex = headway - self.h * this_vel
         ev = lead_vel - this_vel
         u = self.k_1*ex + self.k_2*ev
         a_dot = -(self.a/self.tau) + (u/self.tau)
