@@ -70,7 +70,7 @@ class AVRider(BaseController):
         AVAccelCmd = self.AV.get_accel(env)   #Acceleratoin controller of the specified controller
         
         self.steps = self.steps + 1
-        if (self.steps*env.sim_step >= 350):
+        if (self.steps*env.sim_step >= 300):
             AccelCmd = AVAccelCmd
 
         return max(min(AccelCmd, self.max_accel), -self.max_deaccel)
@@ -688,7 +688,7 @@ class Augmented_OV_FTL(BaseController):
                  h_st=2,
                  h_go=15,
                  v_max=30,
-                 v_eq = 15.0,
+                 v_eq = 4.15,
                  k_c = 11.0,
                  time_delay=0,
                  noise=0,
