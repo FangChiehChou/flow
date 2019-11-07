@@ -80,7 +80,7 @@ def sugiyama_even_interval(render=True, x=0, cont='OV_FTL'):
     if x>22:
         return False
 
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_EvenInterval/IDM_AVRider_{}_EvenInterval/IDM{}_{}{}'.format(cont,22-x,cont,x))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_EvenInterval_1101/IDM_AVRider_{}_EvenInterval/IDM{}_{}{}'.format(cont,22-x,cont,x))
     
     if render is not None:
         sim_params.render = render
@@ -301,14 +301,15 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
 
-    vehicles.add(
-        veh_id="IDM",
-        acceleration_controller=(IDMController, {"noise":0.1}),
-        car_following_params=SumoCarFollowingParams(
-            min_gap=0
-        ),
-        routing_controller=(ContinuousRouter, {}),
-        num_vehicles=22-2*x)    
+    if x<11:
+        vehicles.add(
+            veh_id="IDM",
+            acceleration_controller=(IDMController, {"noise":0.1}),
+            car_following_params=SumoCarFollowingParams(
+                min_gap=0
+            ),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=22-2*x)    
 
     env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
 
