@@ -313,6 +313,8 @@ class TraCIVehicle(KernelVehicle):
         # some constant vehicle parameters to the vehicles class
         self.__vehicles[veh_id]["length"] = self.kernel_api.vehicle.getLength(
             veh_id)
+        self.__vehicles[veh_id]["width"] = self.kernel_api.vehicle.getWidth(
+            veh_id)    
 
         # set the "last_lc" parameter of the vehicle
         self.__vehicles[veh_id]["last_lc"] = -float("inf")
@@ -538,6 +540,12 @@ class TraCIVehicle(KernelVehicle):
         if isinstance(veh_id, (list, np.ndarray)):
             return [self.get_length(vehID, error) for vehID in veh_id]
         return self.__vehicles.get(veh_id, {}).get("length", error)
+
+    def get_width(self, veh_id, error=-1001):
+        """See parent class."""
+        if isinstance(veh_id, (list, np.ndarray)):
+            return [self.get_width(vehID, error) for vehID in veh_id]
+        return self.__vehicles.get(veh_id, {}).get("width", error)
 
     def get_leader(self, veh_id, error=""):
         """See parent class."""

@@ -811,6 +811,8 @@ class SumoCarFollowingParams:
     def __init__(
             self,
             speed_mode='right_of_way',
+            length=5.0,
+            width=1.8,
             accel=2.6,
             decel=4.5,
             sigma=0.5,
@@ -850,6 +852,8 @@ class SumoCarFollowingParams:
 
         # create a controller_params dict with all the specified parameters
         self.controller_params = {
+            "length": length,
+            "width":width,
             "accel": accel,
             "decel": decel,
             "sigma": sigma,
