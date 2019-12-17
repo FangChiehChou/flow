@@ -49,7 +49,7 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
     @property
     def observation_space(self):
         """See class definition."""
-        return Box(low=0, high=1, shape=(3,), dtype=np.float32)
+        return Box(low=-1, high=1, shape=(3,), dtype=np.float32)
 
     @property
     def action_space(self):
@@ -70,7 +70,7 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
 
             # normalizers
             max_speed = 15.
-            max_length = self.env_params.additional_params['ring_length'][1]
+            max_length = 1000
 
             observation = np.array([
                 self.k.vehicle.get_speed(rl_id) / max_speed,
@@ -92,12 +92,14 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
 
     def compute_reward(self, rl_actions, **kwargs):
         """See class definition."""
+        
         # in the warmup steps
         if rl_actions is None:
             return {}
-
+        
         rew = {}
         for rl_id in rl_actions.keys():
+            import ipdb; ipdb.set_trace()
             edge_id = rl_id.split('_')[1]
             edges = self.gen_edges(edge_id)
             vehs_on_edge = self.k.vehicle.get_ids_by_edge(edges)
@@ -108,6 +110,7 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
             if any(vel < -100) or kwargs['fail']:
                 return 0.
 
+            
             target_vel = self.env_params.additional_params['target_velocity']
             max_cost = np.array([target_vel] * len(vehs_on_edge))
             max_cost = np.linalg.norm(max_cost)
@@ -116,6 +119,7 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
             cost = np.linalg.norm(cost)
 
             rew[rl_id] = max(max_cost - cost, 0) / max_cost
+   
         return rew
 
     def additional_command(self):

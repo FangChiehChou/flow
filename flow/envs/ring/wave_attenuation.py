@@ -119,7 +119,7 @@ class WaveAttenuationEnv(Env):
         vel = np.array([
             self.k.vehicle.get_speed(veh_id)
             for veh_id in self.k.vehicle.get_ids()
-        ])
+        ])    ##array of speeds of all the vehicles on the ring.
 
         if any(vel < -100) or kwargs['fail']:
             return 0.
