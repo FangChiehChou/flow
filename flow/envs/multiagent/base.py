@@ -177,6 +177,11 @@ class MultiEnv(MultiAgentEnv, Env):
             self.network.orig_name, self.network.vehicles,
             net_params, self.initial_config)
 
+        self.k.vehicle.kernel_api = self.k.kernel_api
+        self.k.vehicle = deepcopy(self.initial_vehicles)
+        self.k.vehicle.master_kernel = self.k
+        # restart the sumo instance
+        self.restart_simulation(self.sim_params)
 
         if self.sim_params.restart_instance or \
                 (self.step_counter > 2e6 and self.simulator != 'aimsun'):
