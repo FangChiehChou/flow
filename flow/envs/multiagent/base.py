@@ -210,7 +210,11 @@ class MultiEnv(MultiAgentEnv, Env):
                 # now and then reintroduce it
                 self.k.vehicle.remove(veh_id)
                 if self.simulator == 'traci':
-                    self.k.kernel_api.vehicle.remove(veh_id)  # FIXME: hack
+                    if veh_id in self.k.kernel_api.vehicle.getIDList():  # FIXME: hack
+                        try:
+                            self.k.kernel_api.vehicle.remove(veh_id)
+                        except (FatalTraCIError, TraCIException):
+                            print(traceback.format_exc())
                 self.k.vehicle.add(
                     veh_id=veh_id,
                     type_id=type_id,
