@@ -1,5 +1,5 @@
 """Environment for training multi-agent experiments."""
-
+from flow.core.params import NetParams
 from copy import deepcopy
 import numpy as np
 import random
@@ -156,6 +156,27 @@ class MultiEnv(MultiAgentEnv, Env):
                 "**********************************************************\n"
                 "**********************************************************"
             )
+
+        self.step_counter = 0
+        # issue a random seed to induce randomness into the next rollout
+        self.sim_params.seed = random.randint(0, 1e5)
+
+        # update the network
+        length = random.randint(
+            self.env_params.additional_params['ring_length'][0],
+            self.env_params.additional_params['ring_length'][1])
+        additional_net_params = {
+            'length': length,
+            'lanes': self.net_params.additional_params['lanes'],
+            'speed_limit': self.net_params.additional_params['speed_limit'],
+            'resolution': self.net_params.additional_params['resolution']
+        }
+        net_params = NetParams(additional_params=additional_net_params)
+
+        self.network = self.network.__class__(
+            self.network.orig_name, self.network.vehicles,
+            net_params, self.initial_config)
+
 
         if self.sim_params.restart_instance or \
                 (self.step_counter > 2e6 and self.simulator != 'aimsun'):
