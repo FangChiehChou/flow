@@ -49,17 +49,21 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
     @property
     def observation_space(self):
         """See class definition."""
-        return Box(low=-1, high=1, shape=(3,), dtype=np.float32)
+        return Box(low=-float('inf'), high=float('inf'), shape=(3,), dtype=np.float32)
 
     @property
     def action_space(self):
         """See class definition."""
         add_params = self.net_params.additional_params
-        num_rings = add_params['num_rings']
+        if 'num_rings' in add_params:
+            num_rings = add_params['num_rings']
+        else:
+            num_rings = 1
+
         return Box(
             low=-np.abs(self.env_params.additional_params['max_decel']),
             high=self.env_params.additional_params['max_accel'],
-            shape=(int(self.initial_vehicles.num_rl_vehicles / num_rings), ),
+            shape=(1,),
             dtype=np.float32)
 
     def get_state(self):
@@ -70,7 +74,10 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
 
             # normalizers
             max_speed = 15.
-            max_length = 1000
+            if self.env_params.additional_params['ring_length'] is not None:
+                max_length = self.env_params.additional_params['ring_length'][1]
+            else:
+                max_length = self.k.network.length()
 
             observation = np.array([
                 self.k.vehicle.get_speed(rl_id) / max_speed,
@@ -87,7 +94,7 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
         """Split the accelerations by ring."""
         if rl_actions:
             rl_ids = list(rl_actions.keys())
-            accel = list(rl_actions.values())
+            accel = list(rl_actions.values())  
             self.k.vehicle.apply_acceleration(rl_ids, accel)
 
     def compute_reward(self, rl_actions, **kwargs):
@@ -96,29 +103,29 @@ class MultiWaveAttenuationPOEnv(MultiEnv):
         # in the warmup steps
         if rl_actions is None:
             return {}
-        
+    
         rew = {}
         for rl_id in rl_actions.keys():
-            import ipdb; ipdb.set_trace()
-            edge_id = rl_id.split('_')[1]
-            edges = self.gen_edges(edge_id)
-            vehs_on_edge = self.k.vehicle.get_ids_by_edge(edges)
             vel = np.array([
                 self.k.vehicle.get_speed(veh_id)
-                for veh_id in vehs_on_edge
-            ])
+                for veh_id in self.k.vehicle.get_ids()
+            ])    ##array of speeds of all the vehicles on the ring.
             if any(vel < -100) or kwargs['fail']:
                 return 0.
 
-            
-            target_vel = self.env_params.additional_params['target_velocity']
-            max_cost = np.array([target_vel] * len(vehs_on_edge))
-            max_cost = np.linalg.norm(max_cost)
+            # reward average velocity
+            eta_2 = 4.
+            reward = eta_2 * np.mean(vel) / 20
 
-            cost = vel - target_vel
-            cost = np.linalg.norm(cost)
+            # punish accelerations (should lead to reduced stop-and-go waves)
+            eta = 4  # 0.25
+            mean_actions = np.mean(np.abs(np.array(rl_actions[rl_id])))   
+            accel_threshold = 0
 
-            rew[rl_id] = max(max_cost - cost, 0) / max_cost
+            if mean_actions > accel_threshold:
+                reward += eta * (accel_threshold - mean_actions)
+
+            rew[rl_id] = reward
    
         return rew
 
