@@ -198,26 +198,6 @@ class MultiEnv(MultiAgentEnv, Env):
         elif self.initial_config.shuffle:
             self.setup_initial_state()
 
-        # clear all vehicles from the network and the vehicles class
-        if self.simulator == 'traci':
-            for veh_id in self.k.kernel_api.vehicle.getIDList():  # FIXME: hack
-                try:
-                    self.k.vehicle.remove(veh_id)
-                except (FatalTraCIError, TraCIException):
-                    print(traceback.format_exc())
-
-        # clear all vehicles from the network and the vehicles class
-        # FIXME (ev, ak) this is weird and shouldn't be necessary
-        for veh_id in list(self.k.vehicle.get_ids()):
-            # do not try to remove the vehicles from the network in the first
-            # step after initializing the network, as there will be no vehicles
-            if self.step_counter == 0:
-                continue
-            try:
-                self.k.vehicle.remove(veh_id)
-            except (FatalTraCIError, TraCIException):
-                print("Error during start: {}".format(traceback.format_exc()))
-
         # reintroduce the initial vehicles to the network
         for veh_id in self.initial_ids:
             type_id, edge, lane_index, pos, speed = \
