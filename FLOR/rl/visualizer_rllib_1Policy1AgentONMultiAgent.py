@@ -38,7 +38,7 @@ from flow.controllers import ContinuousRouter
 from flow.controllers import IDMController
 from flow.controllers import RLController
 from flow.core.params import SumoCarFollowingParams
-
+from flow.core.params import EnvParams
 EXAMPLE_USAGE = """
 example usage:
     python ./visualizer_rllib.py /ray_results/experiment_dir/result_dir 1
@@ -137,7 +137,7 @@ def vehicles_even_interval(NumAV=1):
     return vehicles  
 
 
-def visualizer_rllib(args,sim_steps=6000,NumAV=1,emission_path=None,AV_distribution=1):
+def visualizer_rllib(args,sim_steps=6000,NumAV=1,emission_path=None,AV_distribution='Platoon'):
     """Visualizer for RLlib experiments.
 
     This function takes args (see function create_parser below for
@@ -165,7 +165,7 @@ def visualizer_rllib(args,sim_steps=6000,NumAV=1,emission_path=None,AV_distribut
 
 
     # Create the vehicle instance I need and replace the one in the training environment
-    if AV_distribution == 1:   #clustered AV distribution
+    if AV_distribution == 'Platoon':   #clustered AV distribution
         vehicles = VehicleParams()
         vehicles.add(
             veh_id='human',
@@ -181,13 +181,29 @@ def visualizer_rllib(args,sim_steps=6000,NumAV=1,emission_path=None,AV_distribut
              routing_controller=(ContinuousRouter, {}),
             num_vehicles=NumAV)
     
-    if AV_distribution == 2:   #1HV interval distribution
+    if AV_distribution == '1HV':   #1HV interval distribution
         vehicles = vehicles_1HV_interval(NumAV)
 
-    if AV_distribution == 3:    #evenly distribution
+    if AV_distribution == 'Even':    #evenly distribution
         vehicles = vehicles_even_interval(NumAV)
 
     flow_params['veh'] = vehicles
+    
+    sim_env=EnvParams(
+        horizon = 7500,
+        warmup_steps=3000,   #300 seconds simulation before the learning starts
+        clip_actions=False,
+        additional_params={
+            'max_accel': 1,
+            'max_decel': 1,
+            "ring_length": [260, 260],
+            'target_velocity': 4
+        },
+    )
+
+    flow_params['env'] = sim_env
+
+
     # hack for old pkl files
     # TODO(ev) remove eventually
     sim_params = flow_params['sim']
@@ -516,22 +532,37 @@ if __name__ == '__main__':
     dir_policy = '/home/lorr/ray_results/lord_of_numrings1/PPO_MultiWaveAttenuationPOEnv-v0_0_lr=1e-05_2019-12-20_10-10-36230jsi8f'
     num_check_point = 200
 
-    # args.render_mode='no_render'   
-    # av_num = 6
-    # args.gen_emission=True
-    # dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/IDM{0}_RL{1}/'.format(22-av_num,av_num)
-    # visualizer_rllib(args,sim_steps=200,NumAV=av_num,emission_path=dir_sim_out)
+    # args.render_mode= 'no_render'
+    av_num = 6
+    args.gen_emission=False
+    dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    visualizer_rllib(args,sim_steps=200,NumAV=av_num,emission_path=dir_sim_out)
 
-
-    
     #===============================================
     # No render but Yes emission csv 
-    args.render_mode='no_render'   
-    args.gen_emission=True
+    # args.render_mode='render'   #render /no_render   
+    # args.gen_emission=True
 
-    for av_num in range(1,23):
-        #assign different number of AVs on the ring
-        dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/IDM{0}_RL{1}/'.format(22-av_num,av_num)
-        for _ in range(10):
-            # ten runs for each scenario
-            visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution=1)
+    #Platooned RL vehicles
+    # for av_num in range(1,23):
+    #     #assign different number of AVs on the ring
+    #     dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    #     for _ in range(10):
+    #         # ten runs for each scenario
+    #         visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='Platoon')
+
+    #Evenly distributed RL vehicles
+    # for av_num in range(2,12):
+    #     #assign different number of AVs on the ring
+    #     dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/Even/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    #     for _ in range(10):
+    #         # ten runs for each scenario
+    #         visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='Even')
+
+    #1HV interval distributed RL vehicles
+    # for av_num in range(2,12):
+    #     #assign different number of AVs on the ring
+    #     dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/1HV/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    #     for _ in range(10):
+    #         # ten runs for each scenario
+    #         visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='1HV')
