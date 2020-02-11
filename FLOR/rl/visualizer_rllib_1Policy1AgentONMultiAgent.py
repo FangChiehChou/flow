@@ -62,7 +62,7 @@ def vehicles_1HV_interval(NumAV=1):
             num_vehicles=1)
         vehicles.add(
             veh_id="rl_{}".format(i),
-            acceleration_controller=(RLController),
+            acceleration_controller=(RLController, {}),
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
 
@@ -127,7 +127,7 @@ def vehicles_even_interval(NumAV=1):
             num_vehicles=hv_num)
         vehicles.add(
             veh_id="rl_{}".format(i),
-            acceleration_controller=(RLController),
+            acceleration_controller=(RLController, {}),
             car_following_params=SumoCarFollowingParams(
                 min_gap=0
             ),
@@ -540,8 +540,8 @@ if __name__ == '__main__':
 
     #===============================================
     # No render but Yes emission csv 
-    # args.render_mode='render'   #render /no_render   
-    # args.gen_emission=True
+    args.render_mode='no_render'   #render /no_render   
+    args.gen_emission=True
 
     #Platooned RL vehicles
     # for av_num in range(1,23):
