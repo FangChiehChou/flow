@@ -200,7 +200,7 @@ class WaveAttenuationEnv(Env):
         print('ring length:', net_params.additional_params['length'])
         print('v_max:', v_eq_max)
         print('-----------------------')
-
+        import ipdb;ipdb.set_trace()
         # restart the sumo instance
         self.restart_simulation(
             sim_params=self.sim_params,

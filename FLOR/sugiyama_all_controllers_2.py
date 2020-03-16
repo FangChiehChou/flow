@@ -214,7 +214,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         vehicles on a ring road.
     """
     
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/Sim1028_IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
     
     if render is not None:
         sim_params.render = render
@@ -293,44 +293,45 @@ import random
 
 if __name__ == "__main__":
     #==================Run One Controller =================
-    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
     # import the experiment variable
-    # NumAV = 1
-    # TypeAV = 'PI'
-    # exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=False)
+    NumAV = 1
+    TypeAV = 'PI'
+    exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=True)
     # exp = sugiyama_10HV_interval(render=True, cont=TypeAV)
     # exp = sugiyama_1HV_interval(render=False, x=NumAV, cont=TypeAV)
     # run for a set number of rollouts / time steps
-    # exp.run(1, 6000)
+    exp.run(1, 20000)
 
     #==================Run all controllers (10 HVs interval) in a bacth=================
     ## 
-    AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    
-    for av in AV_case:
-        print('Start {}'.format(av)) 
-        exp1 = sugiyama_10HV_interval(render=True, cont=av)
-        exp1.run(1, 6000, convert_to_csv=True)
-        del exp1
-            
-    #==================Run all controllers (1 HVs interval) in a bacth=================
-    for av in AV_case:
-        print('Start {}'.format(av)) 
-        for x in range(2,12):
-            AV_num = x
-            exp1 = sugiyama_example1(x = AV_num, cont=av, render=False)
-            exp1.run(1, 6000, convert_to_csv=True)
-            print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
-            print('done') 
-            del exp1 
-
-    #==================Run all controllers in a bacth=================
     # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    
     # for av in AV_case:
     #     print('Start {}'.format(av)) 
-    #     for x in range(23):
-    #         exp1 = sugiyama_example1(x = x, cont=av, render=False)
+    #     exp1 = sugiyama_10HV_interval(render=False, cont=av)
+    #     exp1.run(1, 6000, convert_to_csv=True)
+    #     del exp1
+            
+    #==================Run all controllers (1 HVs interval) in a bacth=================
+    # for av in AV_case:
+    #     print('Start {}'.format(av)) 
+    #     for x in range(2,12):
+    #         AV_num = x
+    #         exp1 = sugiyama_1HV_interval(x = AV_num, cont=av, render=False)
     #         exp1.run(1, 6000, convert_to_csv=True)
-    #         print('{} {} left'.format(av,23-x)) 
+    #         print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
     #         print('done') 
-    #         del exp1
+    #         del exp1 
+
+    #==================Run all controllers in a bacth=================
+    #AV_case = ['AUG','MLYAU1','MLYAU2']
+
+    #for av in AV_case:
+    #    print('Start {}'.format(av)) 
+    #    for x in range(23):
+    #        exp1 = sugiyama_example1(x = x, cont=av, render=False)
+    #        exp1.run(1, 20000, convert_to_csv=True)
+    #        print('{} {} left'.format(av,23-x)) 
+    #        print('done') 
+    #        del exp1

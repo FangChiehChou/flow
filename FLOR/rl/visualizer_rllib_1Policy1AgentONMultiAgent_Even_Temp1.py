@@ -33,7 +33,12 @@ from flow.utils.rllib import get_flow_params
 from flow.utils.rllib import get_rllib_config
 from flow.utils.rllib import get_rllib_pkl
 
-
+from flow.core.params import VehicleParams
+from flow.controllers import ContinuousRouter
+from flow.controllers import IDMController
+from flow.controllers import RLController
+from flow.core.params import SumoCarFollowingParams
+from flow.core.params import EnvParams
 EXAMPLE_USAGE = """
 example usage:
     python ./visualizer_rllib.py /ray_results/experiment_dir/result_dir 1
@@ -44,7 +49,92 @@ Here the arguments are:
 """
 
 
-def visualizer_rllib(args):
+def vehicles_1HV_interval(NumAV=1):
+    vehicles = VehicleParams()
+    for i in range(NumAV):
+        vehicles.add(
+            veh_id="human_{}".format(i),
+            acceleration_controller=(IDMController, {'noise': 0.1}),
+            car_following_params=SumoCarFollowingParams(
+                min_gap=0
+            ),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=1)
+        vehicles.add(
+            veh_id="rl_{}".format(i),
+            acceleration_controller=(RLController, {}),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=1)
+
+    vehicles.add(
+        veh_id="human",
+        acceleration_controller=(IDMController, {"noise":0.1}),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=22-2*NumAV)  
+
+    return vehicles
+
+
+def vehicles_even_interval(NumAV=1):
+    if NumAV == 2:
+        hv_distribution = [10,10]
+        av_distribution = [1,1]
+    if NumAV == 3:
+        hv_distribution = [6,7,6]
+        av_distribution = [1,1,1]
+    if NumAV == 4:
+        hv_distribution = [4,5,4,5]
+        av_distribution = [1,1,1,1]
+    if NumAV == 5:
+        hv_distribution = [3,4,3,4,3]
+        av_distribution = [1,1,1,1,1]
+    if NumAV == 6:
+        hv_distribution = [3,2,3,3,2,3]
+        av_distribution = [1,1,1,1,1,1]
+    if NumAV == 7:
+        hv_distribution = [2,2,2,3,2,2,2]
+        av_distribution = [1,1,1,1,1,1,1]
+    if NumAV == 8:
+        hv_distribution = [2,1,2,2,2,1,2,2]
+        av_distribution = [1,1,1,1,1,1,1,1]
+    if NumAV == 9:
+        hv_distribution = [1,2,1,2,1,2,1,2,1]
+        av_distribution = [1,1,1,1,1,1,1,1,1]
+    if NumAV == 10:
+        hv_distribution = [2,1,1,1,1,2,1,1,1,1]
+        av_distribution = [1,1,1,1,1,1,1,1,1,1]
+    if NumAV == 11:
+        hv_distribution = [1,1,1,1,1,1,1,1,1,1,1]
+        av_distribution = [1,1,1,1,1,1,1,1,1,1,1]
+
+    if NumAV>22:
+        return False
+
+    vehicles = VehicleParams()
+    i=0
+    for hv_num in hv_distribution:
+        i = i + 1
+        vehicles.add(
+            veh_id="human_{}".format(i),
+            acceleration_controller=(IDMController, {"noise":0.1}),
+            car_following_params=SumoCarFollowingParams(
+                min_gap=0
+            ),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=hv_num)
+        vehicles.add(
+            veh_id="rl_{}".format(i),
+            acceleration_controller=(RLController, {}),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=1)  
+
+    return vehicles  
+
+
+def visualizer_rllib(args,sim_steps=6000,NumAV=1,emission_path=None,AV_distribution='Platoon'):
     """Visualizer for RLlib experiments.
 
     This function takes args (see function create_parser below for
@@ -70,24 +160,46 @@ def visualizer_rllib(args):
 
     flow_params = get_flow_params(config)
 
-    # from flow.core.params import VehicleParams
-    # from flow.controllers import ContinuousRouter
-    # from flow.controllers import IDMController
-    # from flow.controllers import RLController
-    # vehicles = VehicleParams()
-    # vehicles.add(
-    #     veh_id='human',
-    #     acceleration_controller=(IDMController, {
-    #         'noise': 0.2
-    #     }),
-    #     routing_controller=(ContinuousRouter, {}),
-    #     num_vehicles=21)
-    # vehicles.add(
-    #     veh_id='rl',
-    #     acceleration_controller=(RLController, {}),
-    #     routing_controller=(ContinuousRouter, {}),
-    #     num_vehicles=1)
-    # flow_params['veh'] = vehicles
+
+    # Create the vehicle instance I need and replace the one in the training environment
+    if AV_distribution == 'Platoon':   #clustered AV distribution
+        vehicles = VehicleParams()
+        vehicles.add(
+            veh_id='human',
+            acceleration_controller=(IDMController, {
+                'noise': 0.1}),
+            car_following_params=SumoCarFollowingParams(
+                    min_gap=0),
+            routing_controller=(ContinuousRouter, {}),
+            num_vehicles=22-NumAV)
+        vehicles.add(
+            veh_id='rl',
+            acceleration_controller=(RLController, {}),
+             routing_controller=(ContinuousRouter, {}),
+            num_vehicles=NumAV)
+    
+    if AV_distribution == '1HV':   #1HV interval distribution
+        vehicles = vehicles_1HV_interval(NumAV)
+
+    if AV_distribution == 'Even':    #evenly distribution
+        vehicles = vehicles_even_interval(NumAV)
+
+    flow_params['veh'] = vehicles
+    
+    sim_env=EnvParams(
+        horizon = 7500,
+        warmup_steps=3000,   #300 seconds simulation before the learning starts
+        clip_actions=False,
+        additional_params={
+            'max_accel': 1,
+            'max_decel': 1,
+            "ring_length": [260, 260],
+            'target_velocity': 4
+        },
+    )
+
+    flow_params['env'] = sim_env
+
 
     # hack for old pkl files
     # TODO(ev) remove eventually
@@ -97,6 +209,7 @@ def visualizer_rllib(args):
     # Determine agent and checkpoint
     config_run = config['env_config']['run'] if 'run' in config['env_config'] \
         else None
+
     if args.run and config_run:
         if args.run != config_run:
             print('visualizer_rllib.py: error: run argument '
@@ -117,10 +230,12 @@ def visualizer_rllib(args):
         sys.exit(1)
 
     sim_params.restart_instance = True
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    emission_path = '{0}/test_time_rollout/'.format(dir_path)
+    
+    #set the path to save the emission_simulation results
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # emission_path = '{0}/test_time_rollout/IDM{1}_RL{2}/'.format(dir_path,22-NumAV,NumAV)
     sim_params.emission_path = emission_path if args.gen_emission else None
-
+    
     # pick your rendering mode
     if args.render_mode == 'sumo_web3d':
         sim_params.num_clients = 2
@@ -143,6 +258,7 @@ def visualizer_rllib(args):
     # Create and register a gym+rllib env
     create_env, env_name = make_create_env(params=flow_params, version=0)
     register_env(env_name, create_env)
+    
 
     # check if the environment is a single or multiagent environment, and
     # get the right address accordingly
@@ -157,6 +273,7 @@ def visualizer_rllib(args):
     # Start the environment with the gui turned on and a path for the
     # emission file
     env_params = flow_params['env']
+    env_params.horizon = sim_steps
     env_params.restart_instance = False
     if args.evaluate:
         env_params.evaluate = True
@@ -165,19 +282,18 @@ def visualizer_rllib(args):
     if args.horizon:
         config['horizon'] = args.horizon
         env_params.horizon = args.horizon
-
     # create the agent that will be used to compute the actions
     agent = agent_cls(env=env_name, config=config)
     checkpoint = result_dir + '/checkpoint_' + args.checkpoint_num
     checkpoint = checkpoint + '/checkpoint-' + args.checkpoint_num
     agent.restore(checkpoint)
-
+    
     if hasattr(agent, "local_evaluator") and \
             os.environ.get("TEST_FLAG") != 'True':
         env = agent.local_evaluator.env
     else:
         env = gym.make(env_name)
-
+    
     if multiagent:
         rets = {}
         # map the agent id to its policy
@@ -205,8 +321,7 @@ def visualizer_rllib(args):
     else:
         use_lstm = False
 
-    env.restart_simulation(
-        sim_params=sim_params, render=sim_params.render)
+    env.restart_simulation(sim_params=sim_params, render=sim_params.render)
 
     # Simulate and collect metrics
     final_outflows = []
@@ -214,13 +329,14 @@ def visualizer_rllib(args):
     mean_speed = []
     std_speed = []
     for i in range(args.num_rollouts):
-        vel = []
+        vel = []        
         state = env.reset()
+        
         if multiagent:
             ret = {key: [0] for key in rets.keys()}
         else:
             ret = 0
-        for _ in range(env_params.horizon):
+        for j in range(env_params.horizon):
             vehicles = env.unwrapped.k.vehicle
             vel.append(np.mean(vehicles.get_speed(vehicles.get_ids())))
             if multiagent:
@@ -236,6 +352,7 @@ def visualizer_rllib(args):
                             state[agent_id], policy_id=policy_map_fn(agent_id))
             else:
                 action = agent.compute_action(state)
+                  
             state, reward, done, _ = env.step(action)
             if multiagent:
                 for actor, rew in reward.items():
@@ -315,12 +432,11 @@ def visualizer_rllib(args):
     # if prompted, convert the emission file into a csv file
     if args.gen_emission:
         time.sleep(0.1)
-
         dir_path = os.path.dirname(os.path.realpath(__file__))
         emission_filename = '{0}-emission.xml'.format(env.network.name)
 
-        emission_path = \
-            '{0}/test_time_rollout/{1}'.format(dir_path, emission_filename)
+        # emission_path = '{0}/{1}'.format(sim_params.emission_path, emission_filename) 
+        emission_path = os.path.join(sim_params.emission_path, emission_filename)
 
         # convert the emission file into a csv file
         emission_to_csv(emission_path)
@@ -328,7 +444,7 @@ def visualizer_rllib(args):
         # print the location of the emission csv file
         emission_path_csv = emission_path[:-4] + ".csv"
         print("\nGenerated emission file at " + emission_path_csv)
-
+        
         # delete the .xml version of the emission file
         os.remove(emission_path)
 
@@ -406,7 +522,44 @@ def create_parser():
 
 
 if __name__ == '__main__':
+    #initialize simulation set up
     parser = create_parser()
     args = parser.parse_args()
     ray.init(num_cpus=1)
-    visualizer_rllib(args)
+    dir_policy = '/home/lorr/ray_results/lord_of_numrings1/PPO_MultiWaveAttenuationPOEnv-v0_0_lr=1e-05_2019-12-20_10-10-36230jsi8f'
+    num_check_point = 200
+
+    # args.render_mode= 'no_render'
+    # av_num = 6
+    # args.gen_emission=False
+    # dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    # visualizer_rllib(args,sim_steps=200,NumAV=av_num,emission_path=dir_sim_out)
+
+    #===============================================
+    # No render but Yes emission csv 
+    args.render_mode='no_render'   #render /no_render   
+    args.gen_emission=True
+
+    # Platooned RL vehicles
+    # for av_num in range(1,6):
+    #     #assign different number of AVs on the ring
+    #     dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/Platoon/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    #     for _ in range(10):
+    #         # ten runs for each scenario
+    #         visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='Platoon')
+
+    #Evenly distributed RL vehicles
+    for av_num in range(2,12):
+        #assign different number of AVs on the ring
+        dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/Even/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+        for _ in range(10):
+            # ten runs for each scenario
+            visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='Even')
+
+    #1HV interval distributed RL vehicles
+    # for av_num in range(2,12):
+    #     #assign different number of AVs on the ring
+    #     dir_sim_out = '/media/lorr/TOSHIBA EXT/lorr_sim_out/1HV/IDM{0}_RL{1}/'.format(22-av_num,av_num)
+    #     for _ in range(10):
+    #         # ten runs for each scenario
+    #         visualizer_rllib(args,sim_steps=20000,NumAV=av_num,emission_path=dir_sim_out,AV_distribution='1HV')

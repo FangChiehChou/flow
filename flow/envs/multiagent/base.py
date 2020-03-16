@@ -51,7 +51,6 @@ class MultiEnv(MultiAgentEnv, Env):
         for _ in range(self.env_params.sims_per_step):
             self.time_counter += 1
             self.step_counter += 1
-
             # perform acceleration actions for controlled human-driven vehicles
             if len(self.k.vehicle.get_controlled_ids()) > 0:
                 accel = []
@@ -248,10 +247,11 @@ class MultiEnv(MultiAgentEnv, Env):
             for veh_id in missing_vehicles:
                 msg += '- {}: {}\n'.format(veh_id, self.initial_state[veh_id])
             raise FatalFlowError(msg=msg)
-
         # perform (optional) warm-up steps before training
         for _ in range(self.env_params.warmup_steps):
+            ##=====TODO apply IDM when rl_action = None=====
             observation, _, _, _ = self.step(rl_actions=None)
+            
 
         # render a frame
         self.render(reset=True)

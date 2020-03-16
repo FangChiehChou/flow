@@ -90,35 +90,39 @@ def sugiyama_example1(render=True, x=0, cont='FS'):
 import random
 
 if __name__ == "__main__":
-    #import the experiment variable
-    for x in range(23):
-        exp1 = sugiyama_example1(x = x,cont='LACC', render=False)
-        print(exp1.env.sim_params.emission_path)
-        exp1.run(1, 500, convert_to_csv=True)
-        print('{} left'.format(23-x)) 
-        print('done') 
-        del exp1
-    for x in range(23):
-        exp1 = sugiyama_example1(x = x,cont='PI', render=False)
-        exp1.run(1, 500, convert_to_csv=True)
-        print('{} left'.format(23-x)) 
-        print('done') 
-        del exp1
-    for x in range(23):
-        exp1 = sugiyama_example1(x = x,cont='FS', render=False)
-        exp1.run(1, 500, convert_to_csv=True)
-        print('{} left'.format(23-x)) 
-        print('done') 
-        del exp1
-    for x in range(23):
-        exp1 = sugiyama_example1(x = x,cont='BCM', render=False)
-        exp1.run(1, 500, convert_to_csv=True)
-        print('{} left'.format(23-x)) 
-        print('done') 
-        del exp1
-    for x in range(23):
-        exp1 = sugiyama_example1(x = x,cont='LinOpt', render=False)
-        exp1.run(1, 500, convert_to_csv=True)
-        print('{} left'.format(23-x)) 
-        print('done') 
-        del exp1
+    exp1 = sugiyama_example1(x = 1,cont='PI', render=True)
+    exp1.run(1, 20000, convert_to_csv=False)
+    del exp1
+
+    # #import the experiment variable
+    # for x in range(23):
+    #     exp1 = sugiyama_example1(x = x,cont='LACC', render=False)
+    #     print(exp1.env.sim_params.emission_path)
+    #     exp1.run(1, 500, convert_to_csv=True)
+    #     print('{} left'.format(23-x)) 
+    #     print('done') 
+    #     del exp1
+    # for x in range(23):
+    #     exp1 = sugiyama_example1(x = x,cont='PI', render=False)
+    #     exp1.run(1, 500, convert_to_csv=True)
+    #     print('{} left'.format(23-x)) 
+    #     print('done') 
+    #     del exp1
+    # for x in range(23):
+    #     exp1 = sugiyama_example1(x = x,cont='FS', render=False)
+    #     exp1.run(1, 500, convert_to_csv=True)
+    #     print('{} left'.format(23-x)) 
+    #     print('done') 
+    #     del exp1
+    # for x in range(23):
+    #     exp1 = sugiyama_example1(x = x,cont='BCM', render=False)
+    #     exp1.run(1, 500, convert_to_csv=True)
+    #     print('{} left'.format(23-x)) 
+    #     print('done') 
+    #     del exp1
+    # for x in range(23):
+    #     exp1 = sugiyama_example1(x = x,cont='LinOpt', render=False)
+    #     exp1.run(1, 500, convert_to_csv=True)
+    #     print('{} left'.format(23-x)) 
+    #     print('done') 
+    #     del exp1

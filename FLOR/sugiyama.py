@@ -33,13 +33,15 @@ def sugiyama_example(render=None):
     """
     sim_params = SumoParams(sim_step=0.1, render=True)
 
+    import ipdb; ipdb.set_trace()
+
     if render is not None:
         sim_params.render = render
 
     vehicles = VehicleParams()
     vehicles.add(
         veh_id="AV",
-        acceleration_controller=(AVRider, {"AVController":FollowerStopper}),
+        acceleration_controller=(FollowerStopper, {}),    #acceleration_controller=(AVRider, {"AVController":FollowerStopper}),
         car_following_params=SumoCarFollowingParams(
             min_gap=0),
         routing_controller=(ContinuousRouter, {}),

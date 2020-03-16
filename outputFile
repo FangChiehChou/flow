@@ -1,0 +1,138 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+                  R2019b (9.7.0.1190202) 64-bit (glnxa64)
+                              August 21, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+>> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>              t = readtable([/home/lorr/flow/alben,'/',/home/lorr/flow/alben/IDM_AVRider_AUG_10Interval/IDM_AUG/sugiyama_20191111-2233541573540434.7127967-emission.csv]);
+                            |
+{Error: Invalid use of operator.
+} 
+>> >> {Unable to resolve the name t.Properties.VariableNames.
+} 
+>> {Unable to resolve the name t.Properties.VariableNames.
+} 
+>> {Unable to resolve the name t.Properties.VariableNames.
+} 
+>> {Unable to resolve the name t.Properties.VariableNames.
+} 
+>> {Unable to resolve the name t.Properties.VariableNames.
+} 
+>> >> {Error: A CONTINUE may only be used within a FOR or WHILE loop.
+} 
+>> {Error: A CONTINUE may only be used within a FOR or WHILE loop.
+} 
+>> {Unrecognized function or variable 'id_exist_flag'.
+} 
+>>          end
+         |
+{Error: Illegal use of reserved keyword "end".
+} 
+>> >> >> >> >> >> {Unrecognized function or variable 'veh_data'.
+} 
+>> {Unrecognized function or variable 'veh_data'.
+} 
+>> {Unrecognized function or variable 'position_vehs'.
+} 
+>> >> {Unrecognized function or variable 'sortIdx'.
+} 
+>> >> >> >> >> >> {Undefined variable veh_data.
+} 
+>> >> >> >> {Unrecognized function or variable 'veh_data'.
+} 
+>> >> >> >> >> >> >> {Unrecognized function or variable 'hv_num'.
+} 
+>> {Unrecognized function or variable 'Matlab_results_dir'.
+} 
+>> >> >> >> >> {Unrecognized function or variable 'veh_data'.
+} 
+>> >> >> >> >> >> >> >> {Error using ylim (line 31)
+Limits must be a 2-element vector of increasing numeric values.
+} 
+>> >> {Unrecognized function or variable 'hv_num'.
+} 
+>> {Unrecognized function or variable 'Matlab_results_dir'.
+} 
+>> >> >> >> >> >> {Error using &
+Matrix dimensions must agree.
+} 
+>> {Unrecognized function or variable 'I'.
+} 
+>> {Index in position 2 is invalid. Array indices must be positive integers or
+logical values.
+} 
+>> >> >> >> {Unrecognized function or variable 'av'.
+} 
+>> {Unrecognized function or variable 'av_num'.
+} 
+>> {Unrecognized function or variable 'av'.
+} 
+>> {Unrecognized function or variable 'av_num'.
+} 
+>> {Array indices must be positive integers or logical values.
+} 
+>> {Array indices must be positive integers or logical values.
+} 
+>> {Array indices must be positive integers or logical values.
+} 
+>> >> {Array indices must be positive integers or logical values.
+} 
+>> {Array indices must be positive integers or logical values.
+} 
+>> >> {Unrecognized function or variable 'veh_id'.
+} 
+>> {Unrecognized function or variable 'veh_data'.
+} 
+>> >> {Unrecognized function or variable 'stabilizing_time'.
+} 
+>> {Unrecognized function or variable 'stable_speed'.
+} 
+>> {Unrecognized function or variable 'maximum_gap'.
+} 
+>> >> {Unrecognized function or variable 'av'.
+} 
+>> >> {Unrecognized function or variable 'stabilizing_time'.
+} 
+>> {Unrecognized function or variable 'stable_speed'.
+} 
+>> {Unrecognized function or variable 'maximum_gap'.
+} 
+>>      end
+     |
+{Error: Illegal use of reserved keyword "end".
+} 
+>> >> {Unrecognized function or variable 'av'.
+} 
+>> >>  end
+ |
+{Error: Illegal use of reserved keyword "end".
+} 
+>> >> >> >> >> >> >> >> >> >> >> [Warning: Ignoring extra legend entries.] 
+[> In legend>process_inputs (line 594)
+  In legend>make_legend (line 335)
+  In legend (line 279)] 
+>> >> {Error using saveas (line 138)
+Invalid or missing path:
+/home/lorr/flow/alben/MATLAB_code/MATLABLORSim1115/StableTime.png
+} 
+>> >> >> >> >> >> >> >> >> >> [Warning: Ignoring extra legend entries.] 
+[> In legend>process_inputs (line 594)
+  In legend>make_legend (line 335)
+  In legend (line 279)] 
+>> >> {Error using saveas (line 138)
+Invalid or missing path:
+/home/lorr/flow/alben/MATLAB_code/MATLABLORSim1115/MaxGap.png
+} 
+>> >> >> >> >> >> >> >> >> >> [Warning: Ignoring extra legend entries.] 
+[> In legend>process_inputs (line 594)
+  In legend>make_legend (line 335)
+  In legend (line 279)] 
+>> >> {Error using saveas (line 138)
+Invalid or missing path:
+/home/lorr/flow/alben/MATLAB_code/MATLABLORSim1115/StableSpeed.png
+} 
+>> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> 

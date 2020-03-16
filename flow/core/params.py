@@ -330,6 +330,7 @@ class VehicleParams:
 
             # update the number of vehicles
             self.num_vehicles += 1
+
             if acceleration_controller[0] == RLController:
                 self.num_rl_vehicles += 1
 

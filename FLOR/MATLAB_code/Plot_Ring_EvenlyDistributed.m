@@ -84,8 +84,8 @@ for av_case_index = 1:1:length(av_case)
                         veh_data{1}.pos = [];
                         veh_data{1}.time = [veh_data{1}.time;time(j)];
                         veh_data{1}.speed = [veh_data{1}.speed;speed(j)];                          
-                        index = find(strcmp(edgestarts_tag,edge_id(j))==1);
-                        veh_data{1}.pos = [veh_data{1}.pos;raw_pos(j)+edgestarts_pos(index)];  
+                        edge_index = find(strcmp(edgestarts_tag,edge_id(j))==1);
+                        veh_data{1}.pos = [veh_data{1}.pos;raw_pos(j)+edgestarts_pos(edge_index)];  
                         continue; 
                     end
 
@@ -96,8 +96,8 @@ for av_case_index = 1:1:length(av_case)
                         veh_data{length(veh_id)}.pos = [];
                         veh_data{length(veh_id)}.time = [veh_data{length(veh_id)}.time;time(j)];
                         veh_data{length(veh_id)}.speed = [veh_data{length(veh_id)}.speed;speed(j)];
-                        index = find(strcmp(edgestarts_tag,edge_id(j))==1);
-                        veh_data{length(veh_id)}.pos = [veh_data{length(veh_id)}.pos;raw_pos(j)+edgestarts_pos(index)]; 
+                        edge_index = find(strcmp(edgestarts_tag,edge_id(j))==1);
+                        veh_data{length(veh_id)}.pos = [veh_data{length(veh_id)}.pos;raw_pos(j)+edgestarts_pos(edge_index)]; 
                     else    
                         index = find(strcmp(veh_id,temp_id)==1); 
                         veh_data{index}.time = [veh_data{index}.time;time(j)];

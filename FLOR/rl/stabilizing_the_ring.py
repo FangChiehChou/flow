@@ -25,9 +25,9 @@ from flow.controllers import RLController, IDMController, ContinuousRouter
 # time horizon of a single rollout
 HORIZON = 7500
 # number of rollouts per training iteration
-N_ROLLOUTS = 20
+N_ROLLOUTS = 1
 # number of parallel workers
-N_CPUS = 10
+N_CPUS = 1
 
 # We place one autonomous vehicle and 22 human-driven vehicles in the network
 vehicles = VehicleParams()
@@ -130,6 +130,8 @@ def setup_exps():
         flow_params, cls=FlowParamsEncoder, sort_keys=True, indent=4)
     config['env_config']['flow_params'] = flow_json
     config['env_config']['run'] = alg_run
+
+    import ipdb;ipdb.set_trace()
 
     create_env, gym_name = make_create_env(params=flow_params, version=0)
 

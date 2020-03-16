@@ -38,22 +38,22 @@ NUM_RINGS = 1
 # number of rollouts per training iteration
 N_ROLLOUTS = 20  # int(20/NUM_RINGS)
 # number of parallel workers
-N_CPUS = 1  # int(20/NUM_RINGS)
+N_CPUS = 10  # int(20/NUM_RINGS)
 
 # We place one autonomous vehicle and 21 human-driven vehicles in the network
 vehicles = VehicleParams()
 for i in range(NUM_RINGS):
     vehicles.add(
-        veh_id='human_{}'.format(i),
+        veh_id='human',
         acceleration_controller=(IDMController, {
             'noise': 0.2}),
-        # car_following_params=SumoCarFollowingParams(
-        #     min_gap=0
-        # ),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=21)
     vehicles.add(
-        veh_id='rl_{}'.format(i),
+        veh_id='rl',
         acceleration_controller=(RLController, {}),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=1)
@@ -66,7 +66,7 @@ flow_params = dict(
     env_name=MultiWaveAttenuationPOEnv,
 
     # name of the network class the experiment is running on
-    network=MultiRingNetwork,
+    network=RingNetwork,
 
     # simulator that is used by the experiment
     simulator='traci',
@@ -81,6 +81,7 @@ flow_params = dict(
     env=EnvParams(
         horizon=HORIZON,
         warmup_steps=3000,   #300 seconds simulation before the learning starts
+        clip_actions=False,
         additional_params={
             'max_accel': 1,
             'max_decel': 1,
@@ -97,7 +98,7 @@ flow_params = dict(
             'lanes': 1,
             'speed_limit': 30,
             'resolution': 40,
-            'num_rings': NUM_RINGS
+            # 'num_rings': NUM_RINGS
         }, ),
 
     # vehicles to be placed in the network at the start of a rollout (see
@@ -106,8 +107,7 @@ flow_params = dict(
 
     # parameters specifying the positioning of vehicles upon initialization/
     # reset (see flow.core.params.InitialConfig)
-    initial=InitialConfig(),  
-    # initial=InitialConfig(bunching=20.0, spacing='custom'),
+    initial=InitialConfig(perturbation=1, spacing='uniform'),  
 )
 
 
@@ -128,14 +128,15 @@ def setup_exps():
     config = agent_cls._default_config.copy()
     config['num_workers'] = N_CPUS
     config['train_batch_size'] = HORIZON * N_ROLLOUTS
-    config['simple_optimizer'] = True
+    #config['simple_optimizer'] = True
     config['gamma'] = 0.999  # discount rate
-    config['model'].update({'fcnet_hiddens': [32, 32]})
+    config["model"].update({"fcnet_hiddens": [3, 3]})#    config['model'].update({'fcnet_hiddens': [32, 32]})  
     config['lr'] = tune.grid_search([1e-5])
     config['horizon'] = HORIZON
-    config['clip_actions'] = True  # FIXME(ev) temporary ray bug
-    config['observation_filter'] = 'NoFilter'
-    config['vf_clip_param'] = 100   
+    config['clip_actions'] = False  # FIXME(ev) temporary ray bug
+    # config['observation_filter'] = 'NoFilter'
+    # config['vf_clip_param'] = 100   
+
 
     # save the flow params for replay
     flow_json = json.dumps(

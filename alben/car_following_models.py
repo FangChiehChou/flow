@@ -13,17 +13,8 @@ import sys
 import math
 import numpy as np
 
-from flow.controllers.base_controller import BaseController
+from alben.base_controller import BaseController
 from flow.controllers import IDMController
-from flow.utils.registry import make_create_env
-from flow.utils.rllib import get_rllib_config
-from flow.utils.rllib import get_rllib_pkl
-from flow.utils.rllib import get_flow_params
-try:
-    from ray.rllib.agents.agent import get_agent_class
-except ImportError:
-    from ray.rllib.agents.registry import get_agent_class
-from ray.tune.registry import register_env
 
 class AVRider(BaseController):
     """AVRider controller.
@@ -106,7 +97,8 @@ class AVRider(BaseController):
             (headway) % 260.0
             / max_length
         ])
-        return observation    
+        return observation   
+
 
 class CFMController(BaseController):
     """CFM controller.
@@ -262,101 +254,6 @@ class BCMController(BaseController):
             self.k_c * (self.v_des - this_vel)
 
 
-class IDM_Hobbit(BaseController):
-    """Intelligent Driver Model (IDM) controller.
-
-    For more information on this controller, see:
-    Treiber, Martin, Ansgar Hennecke, and Dirk Helbing. "Congested traffic
-    states in empirical observations and microscopic simulations." Physical
-    review E 62.2 (2000): 1805.
-
-    Usage
-    -----
-    See BaseController for usage example.
-
-    Attributes
-    ----------
-    veh_id : str
-        Vehicle ID for SUMO identification
-    car_following_params : flow.core.param.SumoCarFollowingParams
-        see parent class
-    v0 : float
-        desirable velocity, in m/s (default: 30)
-    T : float
-        safe time headway, in s (default: 1)
-    a : float
-        max acceleration, in m/s2 (default: 1)
-    b : float
-        comfortable deceleration, in m/s2 (default: 1.5)
-    delta : float
-        acceleration exponent (default: 4)
-    s0 : float
-        linear jam distance, in m (default: 2)
-    dt : float
-        timestep, in s (default: 0.1)
-    noise : float
-        std dev of normal perturbation to the acceleration (default: 0)
-    fail_safe : str
-        type of flow-imposed failsafe the vehicle should posses, defaults
-        to no failsafe (None)
-    """
-
-    def __init__(self,
-                 veh_id,
-                 v0=30,
-                 T=1,
-                 a=1,
-                 b=1.5,
-                 delta=4,
-                 s0=2,
-                 time_delay=0.0,
-                 dt=0.1,
-                 noise=0,
-                 fail_safe=None,
-                 car_following_params=None):
-        """Instantiate an IDM controller."""
-        BaseController.__init__(
-            self,
-            veh_id,
-            car_following_params,
-            delay=time_delay,
-            fail_safe=fail_safe,
-            noise=noise)
-        self.v0 = v0
-        self.T = T
-        self.a = a
-        self.b = b
-        self.delta = delta
-        self.s0 = s0
-        self.dt = dt
-        self.scale = (500/16)
-
-    def get_accel(self, env):
-        """See parent class."""
-        v = env.k.vehicle.get_speed(self.veh_id)*self.scale
-        lead_id = env.k.vehicle.get_leader(self.veh_id)
-        h = env.k.vehicle.get_headway(self.veh_id)*self.scale
-        # import ipdb;ipdb.set_trace()
-        # # # # # veh_len = env.k.vehicle.get_length(self.veh_id)
-        # # # # # veh_width = env.k.vehicle.get_width(self.veh_id)
-        # in order to deal with ZeroDivisionError
-        if abs(h) < 1e-3:
-            h = 1e-3
-
-        if lead_id is None or lead_id == '':  # no car ahead
-            s_star = 0
-        else:
-            lead_vel = env.k.vehicle.get_speed(lead_id)*self.scale
-            s_star = self.s0 + max(
-                0, v * self.T + v * (v - lead_vel) /
-                (2 * np.sqrt(self.a * self.b)))
-
-        a_IDM = self.a * (1 - (v / self.v0)**self.delta - (s_star / h)**2)
-        a_hobbit = max(min(a_IDM, self.max_accel),self.max_deaccel)/self.scale
-        # import ipdb;ipdb.set_trace()
-        return a_hobbit
-
-
 class OVMController(BaseController):
     """Optimal Vehicle Model controller.
 
@@ -500,8 +397,6 @@ class LinearOVM(BaseController):
 
         return (v_h - this_vel) / self.adaptation
 
-
-
 class SimCarFollowingController(BaseController):
     """Controller whose actions are purely defined by the simulator.
 
@@ -588,19 +483,19 @@ class LinOpt_Controller_OVM(BaseController):
 
     def get_accel(self, env):
         """See parent class."""
-        #This is the set of the linear opt parameters when other vheilces are IDM
-        # v_star = 4.18157
-        # s_star = 6.8180
-        # sc_star = 6.8180
-        # N = 22
-        # K=[-0.95464,2.2032,0.26147,1.2331,0.63633,0.92024,0.86654,0.52388,0.94024,0.12825,0.87704,-0.19717,0.71731,-0.412,0.50987,-0.50829,0.29889,-0.50586,0.11532,-0.44032,-0.026243,-0.34996,-0.12584,-0.26547,-0.19315,-0.20448,-0.24149,-0.17126,-0.28275,-0.16005,-0.32452,-0.15974,-0.36905,-0.15803,-0.41373,-0.14533,-0.45294,-0.12019,-0.48196,-0.099521,-0.50502,-0.13163,-0.5481,-0.28571]
-
-        #This is the set of the linear opt parameters when other vheilces are OVM
-        v_star = 9.0694
+        #This is the set of the linear opt parameters when other vehicles are IDM
+        v_star = 4.18157
         s_star = 6.8180
         sc_star = 6.8180
         N = 22
-        K=[-0.79041,4.3082,5.7045,2.2852,8.163,1.0668,7.8095,-0.83604,4.5724,-2.3559,0.083534,-2.7035,-3.4705,-1.8792,-4.7642,-0.55469,-3.9456,0.48891,-2.1702,0.86311,-0.63773,0.67655,0.082931,0.287,0.096708,-0.010375,-0.19433,-0.12364,-0.4668,-0.11216,-0.61086,-0.067385,-0.66183,-0.039267,-0.68395,-0.031113,-0.70706,-0.026942,-0.72516,-0.017337,-0.7276,-0.010351,-0.72994,-0.020352] 
+        K=[-0.95464,2.2032,0.26147,1.2331,0.63633,0.92024,0.86654,0.52388,0.94024,0.12825,0.87704,-0.19717,0.71731,-0.412,0.50987,-0.50829,0.29889,-0.50586,0.11532,-0.44032,-0.026243,-0.34996,-0.12584,-0.26547,-0.19315,-0.20448,-0.24149,-0.17126,-0.28275,-0.16005,-0.32452,-0.15974,-0.36905,-0.15803,-0.41373,-0.14533,-0.45294,-0.12019,-0.48196,-0.099521,-0.50502,-0.13163,-0.5481,-0.28571]
+
+        #This is the set of the linear opt parameters when other vheilces are OVM
+        #v_star = 9.0694
+        #s_star = 6.8180
+        #sc_star = 6.8180
+        #N = 22
+        #K=[-0.79041,4.3082,5.7045,2.2852,8.163,1.0668,7.8095,-0.83604,4.5724,-2.3559,0.083534,-2.7035,-3.4705,-1.8792,-4.7642,-0.55469,-3.9456,0.48891,-2.1702,0.86311,-0.63773,0.67655,0.082931,0.287,0.096708,-0.010375,-0.19433,-0.12364,-0.4668,-0.11216,-0.61086,-0.067385,-0.66183,-0.039267,-0.68395,-0.031113,-0.70706,-0.026942,-0.72516,-0.017337,-0.7276,-0.010351,-0.72994,-0.020352] 
         
         #lead_id = env.k.vehicle.get_leader(self.veh_id)
         #lead_vel = env.k.vehicle.get_speed(lead_id)
@@ -768,8 +663,6 @@ class OV_FTL(BaseController):
 
         return self.alpha * (v_h - this_vel) + self.beta * ((h_dot)/h**2)
 
-
-
 class Augmented_OV_FTL(BaseController):
     """Augmented OV FTL model [Cui et al. 2017].
 
@@ -880,6 +773,9 @@ class ModifiedLyapunovTypeControllerU1(BaseController):
         """Instantiate PISaturation."""
         BaseController.__init__(self, veh_id, car_following_params, delay=1.0)
 
+        # maximum achievable acceleration by the vehicle
+        self.max_accel = car_following_params.controller_params['accel']
+
         # other parameters
         self.gamma = 2
 
@@ -953,6 +849,9 @@ class ModifiedLyapunovTypeControllerU2(BaseController):
     def __init__(self, veh_id, car_following_params):
         """Instantiate PISaturation."""
         BaseController.__init__(self, veh_id, car_following_params, delay=1.0)
+
+        # maximum achievable acceleration by the vehicle
+        self.max_accel = car_following_params.controller_params['accel']
 
         # other parameters
         self.gamma = 2
@@ -1343,127 +1242,5 @@ class FuzzyController_Old(BaseController):
         # compute the acceleration
         accel = (velocity_setting - this_vel) / env.sim_step
         return min(accel, self.max_accel)
-
-
-def RL_agent_OnTheRing(args,sim_steps=6000):
-    """This piece of code is adopted from Visualizer for RLlib experiments.
-
-    """
-    result_dir = args.result_dir if args.result_dir[-1] != '/' \
-        else args.result_dir[:-1]
-    config = get_rllib_config(result_dir)
-    
-
-    # check if we have a multiagent environment but in a
-    # backwards compatible way
-    if config.get('multiagent', {}).get('policies', None):
-        multiagent = True
-        pkl = get_rllib_pkl(result_dir)
-        config['multiagent'] = pkl['multiagent']
-    else:
-        multiagent = False
-
-    # Run on only one cpu for rendering purposes
-    config['num_workers'] = 0
-
-    flow_params = get_flow_params(config)
-
-    # hack for old pkl files
-    # TODO(ev) remove eventually
-    sim_params = flow_params['sim']
-    setattr(sim_params, 'num_clients', 1)
-
-    # Determine agent and checkpoint
-    config_run = config['env_config']['run'] if 'run' in config['env_config'] \
-        else None
-
-    
-    if args.run and config_run:
-        if args.run != config_run:
-            print('visualizer_rllib.py: error: run argument '
-                  + '\'{}\' passed in '.format(args.run)
-                  + 'differs from the one stored in params.json '
-                  + '\'{}\''.format(config_run))
-            sys.exit(1)
-    
-    if args.run:
-        agent_cls = get_agent_class(args.run)
-    elif config_run:
-        agent_cls = get_agent_class(config_run)
-    else:
-        print('visualizer_rllib.py: error: could not find flow parameter '
-              '\'run\' in params.json, '
-              'add argument --run to provide the algorithm or model used '
-              'to train the results\n e.g. '
-              'python ./visualizer_rllib.py /tmp/ray/result_dir 1 --run PPO')
-        sys.exit(1)
-
-    sim_params.restart_instance = True
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    #set the path to save the emission_simulation results
-    emission_path = '{0}/test_time_rollout/IDM_RL/'.format(dir_path)
-    sim_params.emission_path = emission_path if args.gen_emission else None
-    
-    # pick your rendering mode
-    if args.render_mode == 'sumo_web3d':
-        sim_params.num_clients = 2
-        sim_params.render = False
-    elif args.render_mode == 'drgb':
-        sim_params.render = 'drgb'
-        sim_params.pxpm = 4
-    elif args.render_mode == 'sumo_gui':
-        sim_params.render = True
-        print('NOTE: With render mode {}, an extra instance of the SUMO GUI '
-              'will display before the GUI for visualizing the result. Click '
-              'the green Play arrow to continue.'.format(args.render_mode))
-    elif args.render_mode == 'no_render':
-        sim_params.render = False
-    if args.save_render:
-        sim_params.render = 'drgb'
-        sim_params.pxpm = 4
-        sim_params.save_render = True
-
-    # Create and register a gym+rllib env
-    
-    create_env, env_name = make_create_env(params=flow_params, version=0)
-    register_env(env_name, create_env)
-    
-
-    # check if the environment is a single or multiagent environment, and
-    # get the right address accordingly
-    # single_agent_envs = [env for env in dir(flow.envs)
-    #                      if not env.startswith('__')]
-
-    # if flow_params['env_name'] in single_agent_envs:
-    #     env_loc = 'flow.envs'
-    # else:
-    #     env_loc = 'flow.envs.multiagent'
-
-    # Start the environment with the gui turned on and a path for the
-    # emission file
-    env_params = flow_params['env']
-    env_params.horizon = sim_steps
-    env_params.restart_instance = False
-    if args.evaluate:
-        env_params.evaluate = True
-
-    # lower the horizon if testing
-    if args.horizon:
-        config['horizon'] = args.horizon
-        env_params.horizon = args.horizon
-
-    # create the agent that will be used to compute the actions
-    
-    agent = agent_cls(env=env_name, config=config)
-    
-    checkpoint = result_dir + '/checkpoint_' + args.checkpoint_num
-    checkpoint = checkpoint + '/checkpoint-' + args.checkpoint_num
-    agent.restore(checkpoint)
-    return agent
-    # To use the agent to compute the action : 
-    # action = agent.compute_action(state)
-
-
 
 
