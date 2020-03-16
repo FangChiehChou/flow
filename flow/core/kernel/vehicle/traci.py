@@ -18,6 +18,11 @@ from copy import deepcopy
 WHITE = (255, 255, 255)
 CYAN = (0, 255, 255)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+STEPS = 10
+rdelta = 255 / STEPS
+# smoothly go from red to green as the speed increases
+color_bins = [[int(255 - rdelta * i), int(rdelta * i), 0] for i in range(STEPS + 1)]
 
 
 class TraCIVehicle(KernelVehicle):
@@ -68,12 +73,14 @@ class TraCIVehicle(KernelVehicle):
         # number of vehicles to exit the network for every time-step
         self._num_arrived = []
         self._arrived_ids = []
+        self._arrived_rl_ids = []
 
         # whether or not to automatically color vehicles
         try:
-            self._color_vehicles = sim_params.color_vehicles
+            self._color_by_speed = sim_params.color_by_speed
+            self._force_color_update = sim_params.force_color_update
         except AttributeError:
-            self._color_vehicles = False
+            self._force_color_update = False
 
     def initialize(self, vehicles):
         """Initialize vehicle state information.
@@ -126,8 +133,11 @@ class TraCIVehicle(KernelVehicle):
                 self.kernel_api.vehicle.getSubscriptionResults(veh_id)
         sim_obs = self.kernel_api.simulation.getSubscriptionResults()
 
+        arrived_rl_ids = []
         # remove exiting vehicles from the vehicles class
         for veh_id in sim_obs[tc.VAR_ARRIVED_VEHICLES_IDS]:
+            if veh_id in self.get_rl_ids():
+                arrived_rl_ids.append(veh_id)
             if veh_id in sim_obs[tc.VAR_TELEPORT_STARTING_VEHICLES_IDS]:
                 # this is meant to resolve the KeyError bug when there are
                 # collisions
@@ -137,6 +147,7 @@ class TraCIVehicle(KernelVehicle):
             # haven't been removed already
             if vehicle_obs[veh_id] is None:
                 vehicle_obs.pop(veh_id, None)
+        self._arrived_rl_ids.append(arrived_rl_ids)
 
         # add entering vehicles into the vehicles class
         for veh_id in sim_obs[tc.VAR_DEPARTED_VEHICLES_IDS]:
@@ -165,6 +176,7 @@ class TraCIVehicle(KernelVehicle):
             self._num_arrived.clear()
             self._departed_ids.clear()
             self._arrived_ids.clear()
+            self._arrived_rl_ids.clear()
 
             # add vehicles from a network template, if applicable
             if hasattr(self.master_kernel.network.network,
@@ -484,6 +496,13 @@ class TraCIVehicle(KernelVehicle):
         """See parent class."""
         if len(self._arrived_ids) > 0:
             return self._arrived_ids[-1]
+        else:
+            return 0
+
+    def get_arrived_rl_ids(self):
+        """See parent class."""
+        if len(self._arrived_rl_ids) > 0:
+            return self._arrived_rl_ids[-1]
         else:
             return 0
 
@@ -971,8 +990,10 @@ class TraCIVehicle(KernelVehicle):
         """
         for veh_id in self.get_rl_ids():
             try:
-                # color rl vehicles red
-                self.set_color(veh_id=veh_id, color=RED)
+                # If vehicle is already being colored via argument to vehicles.add(), don't re-color it.
+                if self._force_color_update or 'color' not in self.type_parameters[self.get_type(veh_id)]:
+                    # color rl vehicles red
+                    self.set_color(veh_id=veh_id, color=RED)
             except (FatalTraCIError, TraCIException) as e:
                 print('Error when updating rl vehicle colors:', e)
 
@@ -980,9 +1001,32 @@ class TraCIVehicle(KernelVehicle):
         for veh_id in self.get_human_ids():
             try:
                 color = CYAN if veh_id in self.get_observed_ids() else WHITE
-                self.set_color(veh_id=veh_id, color=color)
+                # If vehicle is already being colored via argument to vehicles.add(), don't re-color it.
+                if self._force_color_update or 'color' not in self.type_parameters[self.get_type(veh_id)]:
+                    self.set_color(veh_id=veh_id, color=color)
             except (FatalTraCIError, TraCIException) as e:
                 print('Error when updating human vehicle colors:', e)
+
+        for veh_id in self.get_ids():
+            try:
+                if 'av' in veh_id:
+                    color = RED
+                    # If vehicle is already being colored via argument to vehicles.add(), don't re-color it.
+                    if self._force_color_update or 'color' not in self.type_parameters[self.get_type(veh_id)]:
+                        self.set_color(veh_id=veh_id, color=color)
+            except (FatalTraCIError, TraCIException) as e:
+                print('Error when updating human vehicle colors:', e)
+
+        # color vehicles by speed if desired
+        if self._color_by_speed:
+            max_speed = self.master_kernel.network.max_speed()
+            speed_ranges = np.linspace(0, max_speed, STEPS)
+            for veh_id in self.get_ids():
+                veh_speed = self.get_speed(veh_id)
+                bin_index = np.digitize(veh_speed, speed_ranges)
+                # If vehicle is already being colored via argument to vehicles.add(), don't re-color it.
+                if self._force_color_update or 'color' not in self.type_parameters[self.get_type(veh_id)]:
+                    self.set_color(veh_id=veh_id, color=color_bins[bin_index])
 
         # clear the list of observed vehicles
         for veh_id in self.get_observed_ids():
@@ -1001,10 +1045,9 @@ class TraCIVehicle(KernelVehicle):
 
         The last term for sumo (transparency) is set to 255.
         """
-        if self._color_vehicles:
-            r, g, b = color
-            self.kernel_api.vehicle.setColor(
-                vehID=veh_id, color=(r, g, b, 255))
+        r, g, b = color
+        self.kernel_api.vehicle.setColor(
+            vehID=veh_id, color=(r, g, b, 255))
 
     def add(self, veh_id, type_id, edge, pos, lane, speed):
         """See parent class."""
