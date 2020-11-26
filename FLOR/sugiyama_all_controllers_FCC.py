@@ -7,6 +7,7 @@ from car_following_models import AVRider
 
 from car_following_models import LinOpt_Controller_IDM
 from car_following_models import FuzzyController_New, FuzzyController_Old, ModifiedLyapunovTypeControllerU1, ModifiedLyapunovTypeControllerU2, Augmented_OV_FTL, OV_FTL
+from car_following_models import RingStableAV_for_IDM
 
 from flow.core.experiment import Experiment
 from flow.core.params import SumoParams, EnvParams,InitialConfig, NetParams, SumoCarFollowingParams
@@ -101,6 +102,8 @@ def sugiyama_even_interval(render=True, x=0, cont='OV_FTL',emission_path = None)
         controller = BCMController
     if cont == "LinOpt":
         controller = LinOpt_Controller_IDM
+    if cont == "PlatoonStringStableAV":
+        controller = RingStableAV_for_IDM
 
     vehicles = VehicleParams()    
 
@@ -211,6 +214,8 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL',emission_path = None):
         controller = BCMController
     if cont == "LinOpt":
         controller = LinOpt_Controller_IDM
+    if cont == "PlatoonStringStableAV":
+        controller = RingStableAV_for_IDM
 
     vehicles = VehicleParams()    
 
@@ -333,6 +338,8 @@ def sugiyama_example1(render=True, x=0, cont='PI', emission_path = None):
         controller = BCMController
     if cont == "LinOpt":
         controller = LinOpt_Controller_IDM
+    if cont == "PlatoonStringStableAV":
+        controller = RingStableAV_for_IDM
 
     vehicles = VehicleParams()
     vehicles.add(
@@ -437,10 +444,11 @@ import random
 
 if __name__ == "__main__":
     #==================Run One Controller =================
-    AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
+    AV_case = 'PlatoonStringStableAV'
     ##import the experiment variable
     NumAV = 1
-    TypeAV = 'PI'
+    TypeAV = 'PlatoonStringStableAV'
     exp = sugiyama_example1(x = NumAV, cont=TypeAV, render=True, emission_path = "./data") 
     # exp = sugiyama_1HV_interval(render=False, x=NumAV, cont=TypeAV)
     ### run for a set number of rollouts / time steps

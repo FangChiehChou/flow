@@ -641,6 +641,74 @@ class OV_FTL(BaseController):
         return self.alpha * (v_h - this_vel) + self.beta * ((h_dot)/h**2)
 
 
+class RingStableAV_for_IDM(BaseController):
+    """AV for stabilizing the ring road of IDM [FCC].
+
+    Usage
+    -----
+    See BaseController for usage example.
+
+    Attributes
+    ----------
+    veh_id : str
+        Vehicle ID for SUMO identification
+    car_following_params : flow.core.params.SumoCarFollowingParams
+        see parent class
+    kp : controller parameter 
+    kd : controller parameter
+    kv : controller parameter
+    h_star : equilibrium space  
+    v_star : equilibrium speed
+    time_delay : float
+        time delay (default: 0.5)
+    noise : float
+        std dev of normal perturbation to the acceleration (default: 0)
+    fail_safe : str
+        type of flow-imposed failsafe the vehicle should posses, defaults
+        to no failsafe (None)
+    """
+
+    def __init__(self,
+                 veh_id,
+                 car_following_params,
+                 kp = 1.0000e-03,
+                 kd = 0.1030,
+                 kv = 0.2000,
+                 h_star = 7.3238,
+                 v_star = 5.32,
+                 time_delay=0,
+                 noise=0,
+                 fail_safe=None):
+        """Instantiate an Optimal Vehicle Model controller."""
+        BaseController.__init__(
+            self,
+            veh_id,
+            car_following_params,
+            delay=time_delay,
+            fail_safe=fail_safe,
+            noise=noise)
+        self.veh_id = veh_id
+        self.kp = kp
+        self.kv = kv
+        self.kd = kd
+        self.h_star = h_star
+        self.v_star = v_star
+
+    def get_accel(self, env):
+        """See parent class."""
+        lead_id = env.k.vehicle.get_leader(self.veh_id)
+        if not lead_id:  # no car ahead
+            return self.max_accel
+
+        lead_vel = env.k.vehicle.get_speed(lead_id)
+        this_vel = env.k.vehicle.get_speed(self.veh_id)
+        h = env.k.vehicle.get_headway(self.veh_id)
+        h_dot = lead_vel - this_vel
+
+        return self.kp*(h-self.h_star) + self.kd*h_dot - self.kv*(this_vel-self.v_star)
+
+
+
 
 class Augmented_OV_FTL(BaseController):
     """Augmented OV FTL model [Cui et al. 2017].
