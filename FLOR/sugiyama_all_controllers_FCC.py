@@ -354,7 +354,7 @@ def sugiyama_example1(render=True, x=0, cont='PI', emission_path = None):
         veh_id="{}".format(cont),
         acceleration_controller=(AVRider, {"AVController":controller}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=x)
