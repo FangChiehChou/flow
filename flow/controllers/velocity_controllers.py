@@ -25,7 +25,7 @@ class FollowerStopper(BaseController):
     def __init__(self,
                  veh_id,
                  car_following_params,
-                 v_des=4.15,
+                 v_des=4.18,
                  danger_edges=None):
         """Instantiate FollowerStopper."""
         BaseController.__init__(

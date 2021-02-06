@@ -816,7 +816,7 @@ class Augmented_OV_FTL(BaseController):
                  h_st=2,
                  h_go=15,
                  v_max=30,
-                 v_eq = 4.15,
+                 v_eq = 4.18,
                  k_c = 11.0,
                  time_delay=0,
                  noise=0,
