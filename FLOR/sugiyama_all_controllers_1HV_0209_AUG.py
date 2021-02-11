@@ -254,7 +254,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
     if x>11:
         return False
 
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0205/1HV_INTERVAL/IDM_AVRider_{}_2Interval/IDM{}_{}{}'.format(cont,22-x,cont,x))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0209/1HV_INTERVAL/IDM_AVRider_{}_2Interval/IDM{}_{}{}'.format(cont,22-x,cont,x))
     
     if render is not None:
         sim_params.render = render
@@ -288,7 +288,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
             veh_id="IDM_{}".format(i),
             acceleration_controller=(IDMController, {"noise":0.1}),
             car_following_params=SumoCarFollowingParams(
-                min_gap=0
+                min_gap=0.1
             ),
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
@@ -296,7 +296,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
             veh_id="{}_{}".format(cont,i),
             acceleration_controller=(AVRider, {"AVController":controller}),
             car_following_params=SumoCarFollowingParams(
-                min_gap=0
+                min_gap=0.1
             ),
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
@@ -305,7 +305,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
         veh_id="IDM",
         acceleration_controller=(IDMController, {"noise":0.1}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=22-2*x)    
@@ -456,7 +456,7 @@ if __name__ == "__main__":
             for sim_runs in range(10):
                 AV_num = x
                 exp1 = sugiyama_1HV_interval(x = AV_num, cont=av, render=False)
-                exp1.run(1, 6000, convert_to_csv=True)
+                exp1.run(1, 20000, convert_to_csv=True)
                 print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
                 print('done') 
                 del exp1 

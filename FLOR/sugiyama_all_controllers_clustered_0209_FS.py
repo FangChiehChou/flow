@@ -214,7 +214,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         vehicles on a ring road.
     """
     
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0205/CLustered/IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0209/Clustered/IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
     
     if render is not None:
         sim_params.render = render
@@ -246,7 +246,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         veh_id="IDM",
         acceleration_controller=(IDMController, {"noise":0.1}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=22-x)
@@ -254,7 +254,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         veh_id="{}".format(cont),
         acceleration_controller=(AVRider, {"AVController":controller}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=x)
@@ -325,7 +325,7 @@ if __name__ == "__main__":
     #         del exp1 
 
     #==================Run all controllers in a bacth=================
-    AV_case = ['BCM']
+    AV_case = ['FS']
 
     for av in AV_case:
         print('Start {}'.format(av)) 

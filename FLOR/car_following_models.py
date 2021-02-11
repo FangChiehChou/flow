@@ -537,7 +537,7 @@ class LinOpt_Controller_IDM(BaseController):
     def get_accel(self, env):
         """See parent class."""
         #This is the set of the linear opt parameters when other vheilces are IDM
-        v_star = 4.18157
+        v_star = 4.8157
         s_star = 6.8180
         sc_star = 6.8180
         N = 22
@@ -589,7 +589,7 @@ class LinOpt_Controller_OVM(BaseController):
     def get_accel(self, env):
         """See parent class."""
         #This is the set of the linear opt parameters when other vheilces are IDM
-        # v_star = 4.18157
+        # v_star = 4.8157
         # s_star = 6.8180
         # sc_star = 6.8180
         # N = 22
@@ -816,7 +816,7 @@ class Augmented_OV_FTL(BaseController):
                  h_st=2,
                  h_go=15,
                  v_max=30,
-                 v_eq = 4.18,
+                 v_eq = 4.8,
                  k_c = 11.0,
                  time_delay=0,
                  noise=0,

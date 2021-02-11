@@ -80,7 +80,7 @@ def sugiyama_even_interval(render=True, x=0, cont='OV_FTL'):
     if x>22:
         return False
 
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0205/Evenly_Distributed/IDM_AVRider_{}_EvenInterval/IDM{}_{}{}'.format(cont,22-x,cont,x))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_EvenInterval/IDM_AVRider_{}_EvenInterval/IDM{}_{}{}'.format(cont,22-x,cont,x))
     
     if render is not None:
         sim_params.render = render
@@ -254,7 +254,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
     if x>11:
         return False
 
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/IDM_AVRider_{}_2Interval/IDM{}_{}{}'.format(cont,22-x,cont,x))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0209/1HV_INTERVAL/IDM_AVRider_{}_2Interval/IDM{}_{}{}'.format(cont,22-x,cont,x))
     
     if render is not None:
         sim_params.render = render
@@ -288,7 +288,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
             veh_id="IDM_{}".format(i),
             acceleration_controller=(IDMController, {"noise":0.1}),
             car_following_params=SumoCarFollowingParams(
-                min_gap=0
+                min_gap=0.1
             ),
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
@@ -296,7 +296,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
             veh_id="{}_{}".format(cont,i),
             acceleration_controller=(AVRider, {"AVController":controller}),
             car_following_params=SumoCarFollowingParams(
-                min_gap=0
+                min_gap=0.1
             ),
             routing_controller=(ContinuousRouter, {}),
             num_vehicles=1)
@@ -305,7 +305,7 @@ def sugiyama_1HV_interval(render=True, x=0, cont='OV_FTL'):
         veh_id="IDM",
         acceleration_controller=(IDMController, {"noise":0.1}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=22-2*x)    
@@ -449,15 +449,17 @@ if __name__ == "__main__":
     #     del exp1
             
     #==================Run all controllers (1 HVs interval) in a bacth=================
-    # for av in AV_case:
-    #     print('Start {}'.format(av)) 
-    #     for x in range(2,12):
-    #         AV_num = x
-    #         exp1 = sugiyama_1HV_interval(x = AV_num, cont=av, render=False)
-    #         exp1.run(1, 6000, convert_to_csv=True)
-    #         print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
-    #         print('done') 
-    #         del exp1 
+    AV_case = ['FS']
+    for av in AV_case:
+        print('Start {}'.format(av)) 
+        for x in range(2,12):
+            for sim_runs in range(10):
+                AV_num = x
+                exp1 = sugiyama_1HV_interval(x = AV_num, cont=av, render=False)
+                exp1.run(1, 20000, convert_to_csv=True)
+                print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
+                print('done') 
+                del exp1 
 
     #==================Run all controllers in a bacth=================
     # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
@@ -473,17 +475,16 @@ if __name__ == "__main__":
 
 
 ##    ==================Run all controllers evenly distributed in a bacth=================
-    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    AV_case = ['BCM']
-    for av in AV_case:
-        print('Start {}'.format(av)) 
-        AV_num = 1
-        for x in range(2,12):
-            for sim_runs in range(10):
-                AV_num = AV_num + 1
-                exp1 = sugiyama_even_interval(x = x, cont=av, render=False)
-                exp1.run(1, 2000, convert_to_csv=True)
-                print('Run {} : {} {} placed on the ring, {} iterations left'.format(sim_runs,AV_num,av,11-AV_num)) 
-                print('done') 
-                del exp1
+    # AV_case = ['AUG']
+    
+    # for av in AV_case:
+    #     print('Start {}'.format(av)) 
+    #     AV_num = 1
+    #     for x in range(2,12):
+    #         AV_num = AV_num + 1
+    #         exp1 = sugiyama_even_interval(x = x, cont=av, render=False)
+    #         exp1.run(1, 6000, convert_to_csv=True)
+    #         print('{} {} placed on the ring, {} iterations left'.format(AV_num,av,11-AV_num)) 
+    #         print('done') 
+    #         del exp1
 

@@ -21,140 +21,6 @@ import numpy as np
 import os
 
 
-def sugiyama_even_interval(render=True, x=0, cont='OV_FTL'):
-    """
-    Perform a simulation of vehicles on a ring road.
-    AVs are placed with 1 HV intervals.
-    """
-    
-    if x == 2:
-        hv_distribution = [10,10]
-        av_distribution = [1,1]
-    if x == 3:
-        hv_distribution = [6,7,6]
-        av_distribution = [1,1,1]
-    if x == 4:
-        hv_distribution = [4,5,4,5]
-        av_distribution = [1,1,1,1]
-    if x == 5:
-        hv_distribution = [3,4,3,4,3]
-        av_distribution = [1,1,1,1,1]
-    if x == 6:
-        hv_distribution = [3,2,3,3,2,3]
-        av_distribution = [1,1,1,1,1,1]
-    if x == 7:
-        hv_distribution = [2,2,2,3,2,2,2]
-        av_distribution = [1,1,1,1,1,1,1]
-    if x == 8:
-        hv_distribution = [2,1,2,2,2,1,2,2]
-        av_distribution = [1,1,1,1,1,1,1,1]
-    if x == 9:
-        hv_distribution = [1,2,1,2,1,2,1,2,1]
-        av_distribution = [1,1,1,1,1,1,1,1,1]
-    if x == 10:
-        hv_distribution = [2,1,1,1,1,2,1,1,1,1]
-        av_distribution = [1,1,1,1,1,1,1,1,1,1]
-    if x == 11:
-        hv_distribution = [1,1,1,1,1,1,1,1,1,1,1]
-        av_distribution = [1,1,1,1,1,1,1,1,1,1,1]
-    # if x == 12:
-    #     hv_distribution = [1,1,1,1,1,1,1,1,1,1]
-    #     av_distribution = [2,1,1,1,1,2,1,1,1,1]
-    # if x == 13:
-
-    # if x == 14:
-
-    # if x == 15:
-
-    # if x == 16:
-
-    # if x == 17:
-
-    # if x == 18:
-
-    # if x == 19:
-
-    # if x == 20:           
-
-
-    if x>22:
-        return False
-
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0205/Evenly_Distributed/IDM_AVRider_{}_EvenInterval/IDM{}_{}{}'.format(cont,22-x,cont,x))
-    
-    if render is not None:
-        sim_params.render = render
-
-    #Switch the controller to be deployed
-    if cont == "AUG":
-        controller = Augmented_OV_FTL    
-    if cont == "MLYAU1":
-        controller = ModifiedLyapunovTypeControllerU1
-    if cont == "MLYAU2":
-        controller = ModifiedLyapunovTypeControllerU2
-    if cont == "FUZO":
-        controller = FuzzyController_Old
-    if cont == "FUZN":
-        controller = FuzzyController_New
-    if cont == "FS":
-        controller = FollowerStopper
-    if cont == "LACC":
-        controller = LACController    
-    if cont == "PI":
-        controller = PISaturation
-    if cont == "BCM":
-        controller = BCMController
-    if cont == "LinOpt":
-        controller = LinOpt_Controller_IDM
-
-    vehicles = VehicleParams()    
-
-    i = 0
-    for hv_num in hv_distribution:
-        i = i + 1
-        vehicles.add(
-            veh_id="IDM_{}".format(i),
-            acceleration_controller=(IDMController, {"noise":0.1}),
-            car_following_params=SumoCarFollowingParams(
-                min_gap=0
-            ),
-            routing_controller=(ContinuousRouter, {}),
-            num_vehicles=hv_num)
-        vehicles.add(
-            veh_id="{}_{}".format(cont,i),
-            acceleration_controller=(AVRider, {"AVController":controller}),
-            car_following_params=SumoCarFollowingParams(
-                min_gap=0
-            ),
-            routing_controller=(ContinuousRouter, {}),
-            num_vehicles=1)
-
-    env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
-
-    net_params = NetParams(
-        additional_params={
-            'length': 260,
-            'lanes': 1,
-            'speed_limit': 30,
-            'resolution': 40
-        }
-    )
-
-    initial_config = InitialConfig(perturbation=1, spacing='uniform')
-
-    scenario = RingNetwork(
-        name="sugiyama",
-        vehicles=vehicles,
-        net_params=net_params,
-        initial_config=initial_config)
-
-    env = AccelEnv(env_params, sim_params, scenario)
-
-    return Experiment(env)
-
-
-
-
 def sugiyama_10HV_interval(render=True, cont='OV_FTL'):
     """
     Perform a simulation of vehicles on a ring road.
@@ -348,7 +214,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         vehicles on a ring road.
     """
     
-    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/home/lorr/flow/FLOR/Sim1025_IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
+    sim_params = SumoParams(sim_step=0.1, render=False, emission_path='/media/lorr/TOSHIBA EXT/LORR/new_test_0209/Clustered/IDM_AVRider_{}/{}IDM_{}{}'.format(cont,22-x,x,cont))
     
     if render is not None:
         sim_params.render = render
@@ -380,7 +246,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         veh_id="IDM",
         acceleration_controller=(IDMController, {"noise":0.1}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=22-x)
@@ -388,7 +254,7 @@ def sugiyama_example1(render=True, x=0, cont='OV_FTL'):
         veh_id="{}".format(cont),
         acceleration_controller=(AVRider, {"AVController":controller}),
         car_following_params=SumoCarFollowingParams(
-            min_gap=0
+            min_gap=0.1
         ),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=x)
@@ -440,7 +306,6 @@ if __name__ == "__main__":
     #==================Run all controllers (10 HVs interval) in a bacth=================
     ## 
     # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    # AV_case = ['LinOpt']
     
     # for av in AV_case:
     #     print('Start {}'.format(av)) 
@@ -460,30 +325,14 @@ if __name__ == "__main__":
     #         del exp1 
 
     #==================Run all controllers in a bacth=================
-    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    # AV_case = ['LACC']
-    # for av in AV_case:
-    #     print('Start {}'.format(av)) 
-    #     for x in range(23):
-    #         exp1 = sugiyama_example1(x = x, cont=av, render=False)
-    #         exp1.run(1, 6000, convert_to_csv=True)
-    #         print('{} {} left'.format(av,23-x)) 
-    #         print('done') 
-    #         del exp1
+    AV_case = ['LinOpt']
 
-
-##    ==================Run all controllers evenly distributed in a bacth=================
-    # AV_case = ['AUG','MLYAU1','MLYAU2','FUZN','FUZO','LACC','PI','FS','BCM','LinOpt']
-    AV_case = ['AUG']
     for av in AV_case:
         print('Start {}'.format(av)) 
-        AV_num = 1
-        for x in range(2,12):
+        for x in range(0,23):
             for sim_runs in range(10):
-                AV_num = AV_num + 1
-                exp1 = sugiyama_even_interval(x = x, cont=av, render=False)
-                exp1.run(1, 2000, convert_to_csv=True)
-                print('Run {} : {} {} placed on the ring, {} iterations left'.format(sim_runs,AV_num,av,11-AV_num)) 
+                exp1 = sugiyama_example1(x = x, cont=av, render=False)
+                exp1.run(1, 20000, convert_to_csv=True)
+                print('{} {} left'.format(av,23-x)) 
                 print('done') 
                 del exp1
-

@@ -129,7 +129,7 @@ class BCMController(BaseController):
                  k_v=1,
                  k_c=1,
                  d_des=1,
-                 v_des=4.18,
+                 v_des=4.8,
                  time_delay=0.0,
                  noise=0,
                  fail_safe=None):
