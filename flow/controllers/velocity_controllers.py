@@ -97,7 +97,7 @@ class FollowerStopper(BaseController):
             elif dx <= dx_2:
                 v_cmd = v * (dx - dx_1) / (dx_2 - dx_1)
             elif dx <= dx_3:
-                v_cmd = v + (self.v_des - this_vel) * (dx - dx_2) \
+                v_cmd = v + (self.v_des - v) * (dx - dx_2) \
                         / (dx_3 - dx_2)
             else:
                 v_cmd = self.v_des

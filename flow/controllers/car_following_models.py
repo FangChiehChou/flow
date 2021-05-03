@@ -205,9 +205,9 @@ class LACController(BaseController):
     def __init__(self,
                  veh_id,
                  car_following_params,
-                 k_1=0.7,
-                 k_2=0.8,
-                 h=1,
+                 k_1=0.4,   #0.7 
+                 k_2=0.7,   #0.8 
+                 h=1.4,  #1.0
                  tau=0.1,
                  a=0,
                  time_delay=0.0,
